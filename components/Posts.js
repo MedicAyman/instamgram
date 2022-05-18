@@ -1,36 +1,32 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { db } from "../firebase";
 import Post from "./Post";
 
-const DUMMY_POSTS = [
-  {
-    id: "123",
-    username: "whattheayman",
-    userImg:
-      "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.wGX20c9DLIL7UkXxmvTV_QHaGN%26pid%3DApi&f=1",
-    img: "https://upload.wikimedia.org/wikipedia/commons/0/08/Elon_Musk_at_a_Press_Conference.jpg",
-    caption: "Let justice be done, though the heavens fall",
-  },
-  {
-    id: "145",
-    username: "whattheayman",
-    userImg:
-      "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.wGX20c9DLIL7UkXxmvTV_QHaGN%26pid%3DApi&f=1",
-    img: "https://upload.wikimedia.org/wikipedia/commons/0/08/Elon_Musk_at_a_Press_Conference.jpg",
-    caption: "Let justice be done, though the heavens fall",
-  },
-];
 function Posts() {
+  const [posts, setPosts] = useState([]);
+
+  useEffect(
+    () =>
+      onSnapshot(
+        query(collection(db, "posts"), orderBy("timestamp", "desc")),
+        (snapshot) => {
+          setPosts(snapshot.docs);
+        }
+      ),
+    []
+  );
   return (
     <div>
       {/* Post */}
-      {DUMMY_POSTS.map((post) => (
+      {posts.map((post) => (
         <Post
           key={post.id}
           id={post.id}
-          username={post.username}
-          userImg={post.userImg}
-          img={post.img}
-          caption={post.caption}
+          username={post.data().username}
+          userImg={post.data().profileImage}
+          img={post.data().image}
+          caption={post.data().caption}
         />
       ))}
     </div>
