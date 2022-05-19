@@ -7,7 +7,7 @@ import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCrCE3uulWNHje7zgaImz8OrcznBfnkGQg",
+  apiKey: process.env.API_KEY,
   authDomain: "instagram-f18c6.firebaseapp.com",
   projectId: "instagram-f18c6",
   storageBucket: "instagram-f18c6.appspot.com",
