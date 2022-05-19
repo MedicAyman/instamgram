@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useState } from "react";
-import { query } from "firebase/firestore";
-import { HearIcon as HeartIconFilled } from "@heroicons/react/solid";
+import { deleteDoc, doc, query, setDoc } from "firebase/firestore";
+
 import {
   BookmarkIcon,
   EmojiHappyIcon,
@@ -10,6 +10,8 @@ import {
   PaperAirplaneIcon,
   HeartIcon,
 } from "@heroicons/react/outline";
+
+import { HeartIcon as HeartIconSolid } from "@heroicons/react/solid";
 import { useSession } from "next-auth/react";
 import {
   addDoc,
@@ -23,8 +25,16 @@ import Moment from "react-moment";
 function Post({ id, username, userImg, img, caption }) {
   const [comments, setComments] = useState([]);
   const [comment, setComment] = useState("");
+  const [likes, setLikes] = useState([]);
+  const [hasLiked, setHasLiked] = useState(false);
 
   const { data: session } = useSession();
+
+  useEffect(() => {
+    onSnapshot(collection(db, "posts", id, "likes"), (snapshot) => {
+      setLikes(snapshot.docs);
+    });
+  }, [db, id]);
 
   useEffect(
     () =>
@@ -39,7 +49,21 @@ function Post({ id, username, userImg, img, caption }) {
       ),
     [db]
   );
-
+  useEffect(() => {
+    setHasLiked(
+      likes.findIndex((like) => like.id === session?.user?.uuid) !== -1
+    );
+  }, [likes, hasLiked, session?.user?.uuid]);
+  const likesPost = async () => {
+    if (hasLiked) {
+      await deleteDoc(doc(db, "posts", id, "likes", session.user.uuid));
+    } else {
+      console.log("liked");
+      await setDoc(doc(db, "posts", id, "likes", session.user.uuid), {
+        username: session.user.username,
+      });
+    }
+  };
   const sendComment = async (e) => {
     e.preventDefault();
 
@@ -52,6 +76,7 @@ function Post({ id, username, userImg, img, caption }) {
       timestamp: serverTimestamp(),
     });
   };
+
   return (
     <div className="bg-white my-7 border rounded-sm">
       {/* Header */}
@@ -70,7 +95,11 @@ function Post({ id, username, userImg, img, caption }) {
       {session && (
         <div className="flex justify-between px-4 pt-4">
           <div className="flex space-x-4">
-            <HeartIcon className="post_buttons" />
+            {hasLiked ? (
+              <HeartIconSolid onClick={likesPost} className="post_buttons" />
+            ) : (
+              <HeartIcon onClick={likesPost} className="post_buttons" />
+            )}
             <ChatIcon className="post_buttons" />
             <PaperAirplaneIcon className="post_buttons" />
           </div>
@@ -79,6 +108,9 @@ function Post({ id, username, userImg, img, caption }) {
       )}
       {/* Captions */}
       <p className="p-5 truncate">
+        {likes.length > 0 && (
+          <p className="font-bold mb-1">{likes.length} Likes</p>
+        )}
         <span className="font-bold mr-2">{username}</span>
         {caption}
       </p>
