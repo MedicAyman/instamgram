@@ -1,3 +1,7 @@
+This is an instagram clone:
+Functionalities include: auth with google, likes, comments 
+Technologies: Next.Js, TailwindCSS, Firebase, nextAuth, Reactjs
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
